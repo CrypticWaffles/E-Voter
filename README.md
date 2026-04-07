@@ -11,6 +11,20 @@ A civic engagement web platform where users watch legislative video content, cas
 - **Feedback** — Users can submit open-ended feedback at any time.
 - **Auto-seeding** — The database seeds itself with sample videos on first launch; no manual SQL required.
 
+## Screenshots
+
+**Homepage**
+![Homepage](doc/images/Screenshot%202026-04-07%20162344.png)
+
+**Video Library**
+![Video Library](doc/images/Screenshot%202026-04-07%20162229.png)
+
+**National Results**
+![National Results](doc/images/Screenshot%202026-04-07%20162310.png)
+
+**Feedback**
+![Feedback](doc/images/Screenshot%202026-04-07%20162321.png)
+
 ## Tech Stack
 
 | Layer | Technology |
