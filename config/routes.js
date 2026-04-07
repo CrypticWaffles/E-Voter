@@ -1,19 +1,21 @@
 module.exports.routes = {
-  '/gp/': { view: 'pages/homepage' },
+  '/': { view: 'pages/homepage' },
 
   // Feedback
-  '/gp/feedback': { view: 'pages/feedback' }, // Feedback Page
-  'POST /gp/feedback': 'FeedbackController.create', // Feedback method
+  '/feedback': { view: 'pages/feedback' },
+  'POST /feedback': 'FeedbackController.create',
 
   // ZIP
-  '/gp/location': { view: 'pages/location' }, // ZIP Page
-  'GET /gp/api/location': 'LocationController.find', // ZIP method
+  '/location': { view: 'pages/location' },
+  'GET /api/location': 'LocationController.find',
 
   // Videos
-  'GET /gp/video/list': 'VideoController.list',  // Show all videos
-  'GET /gp/video/play/:id': 'VideoController.play',  // Play a specific video
+  'GET /video/list': 'VideoController.list',
+  'GET /video/play/:id': 'VideoController.play',
 
   // Voting
-  '/gp/vote': { view: 'pages/vote' },
-  'POST /gp/vote': 'VoteController.vote',
+  'POST /vote': 'VoteController.vote',
+
+  // Analytics
+  'GET /analytics': 'VoteController.analytics',
 };

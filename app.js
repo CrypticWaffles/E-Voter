@@ -21,6 +21,24 @@
  */
 
 
+// Polyfill util.is* functions removed in Node.js v22+ (required by sails-disk/nedb)
+const util = require('util');
+if (!util.isArray)         { util.isArray         = Array.isArray; }
+if (!util.isBoolean)       { util.isBoolean       = (v) => typeof v === 'boolean'; }
+if (!util.isBuffer)        { util.isBuffer        = Buffer.isBuffer; }
+if (!util.isDate)          { util.isDate          = (v) => v instanceof Date; }
+if (!util.isError)         { util.isError         = (v) => v instanceof Error; }
+if (!util.isFunction)      { util.isFunction      = (v) => typeof v === 'function'; }
+if (!util.isNull)          { util.isNull          = (v) => v === null; }
+if (!util.isNullOrUndefined){ util.isNullOrUndefined = (v) => v == null; }
+if (!util.isNumber)        { util.isNumber        = (v) => typeof v === 'number'; }
+if (!util.isObject)        { util.isObject        = (v) => typeof v === 'object' && v !== null; }
+if (!util.isPrimitive)     { util.isPrimitive      = (v) => v === null || (typeof v !== 'object' && typeof v !== 'function'); }
+if (!util.isRegExp)        { util.isRegExp        = (v) => v instanceof RegExp; }
+if (!util.isString)        { util.isString        = (v) => typeof v === 'string'; }
+if (!util.isSymbol)        { util.isSymbol        = (v) => typeof v === 'symbol'; }
+if (!util.isUndefined)     { util.isUndefined     = (v) => v === undefined; }
+
 // Ensure we're in the project directory, so cwd-relative paths work as expected
 // no matter where we actually lift from.
 // > Note: This is not required in order to lift, but it is a convenient default.

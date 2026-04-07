@@ -29,7 +29,7 @@ async function fetchLocation() {
   }
 
   try {
-    let response = await fetch(`/gp/api/location?zip=${zip}`);
+    let response = await fetch(`/api/location?zip=${zip}`);
     if (!response.ok) {
       throw new Error('Network response was not ok');
     }

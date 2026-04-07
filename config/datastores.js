@@ -15,7 +15,6 @@
 
 module.exports.datastores = {
   default: {
-    adapter: 'sails-postgresql',
-    url: 'postgresql://evoter_user:your_secure_password@localhost:5432/evoter'
+    adapter: 'sails-disk',
   }
 };

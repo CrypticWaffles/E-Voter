@@ -6,34 +6,57 @@
  */
 
 module.exports = {
-  vote: async function (req, res) {
+
+  vote: async function(req, res) {
     try {
-      console.log('Vote request received at:', new Date().toISOString());
-      console.log('Request body:', req.body);
+      const { VideoID, choice, zipId } = req.body;
 
-      // Extract the vote data from the request
-      let { VideoID, choice, zipId } = req.body;
-      console.log(`Extracted Vote Data - VideoID: ${VideoID}, Choice: ${choice}, ZipID: ${zipId}`);
-
-      // Validate the data
       if (!VideoID || typeof choice !== 'boolean' || !zipId) {
-        console.log('Invalid vote data received', { VideoID, choice, zipId });
         return res.badRequest({ error: 'Invalid vote data' });
       }
 
-      console.log('Saving vote to the database...');
+      await Vote.create({ VideoId: VideoID, choice, zipId });
 
-      // Save the vote to the database
-      await Vote.create({ VideoId: VideoID,choice: choice, zipId: zipId});
-      console.log('Vote saved successfully');
+      // Return updated tallies for the voted-on video
+      const votes = await Vote.find({ VideoId: VideoID });
+      const yesVotes = votes.filter(v => v.choice).length;
+      const noVotes  = votes.filter(v => !v.choice).length;
 
-      // Redirect to the feedback page
-      console.log('Redirecting to feedback page...');
-      return res.redirect('/gp/feedback');
+      return res.json({ success: true, yesVotes, noVotes });
     } catch (err) {
-      // Handle server errors
-      console.error('Error processing vote:', err);
       return res.serverError(err);
     }
+  },
+
+  analytics: async function(req, res) {
+    const votes     = await Vote.find();
+    const locations = await Location.find();
+
+    // Build ZIP -> state lookup
+    const zipToState = {};
+    locations.forEach(l => { zipToState[l.zip] = l.state; });
+
+    // Aggregate yes/no counts by state
+    const byState = {};
+    votes.forEach(v => {
+      const state = zipToState[v.zipId] || 'Unknown';
+      if (!byState[state]) byState[state] = { yes: 0, no: 0 };
+      v.choice ? byState[state].yes++ : byState[state].no++;
+    });
+
+    const stateData = Object.entries(byState)
+      .map(([state, counts]) => ({
+        state,
+        yes:   counts.yes,
+        no:    counts.no,
+        total: counts.yes + counts.no,
+      }))
+      .sort((a, b) => b.total - a.total);
+
+    const totalYes = votes.filter(v => v.choice).length;
+    const totalNo  = votes.filter(v => !v.choice).length;
+
+    return res.view('pages/analytics', { stateData, totalYes, totalNo });
   }
+
 };

@@ -1,0 +1,80 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">National Results</h2>
+    <a href="/video/list" class="btn btn-outline-secondary btn-sm">&larr; Back to Videos</a>
+  </div>
+
+  <%
+    const grandTotal = totalYes + totalNo;
+    const overallYesPct = grandTotal ? Math.round((totalYes / grandTotal) * 100) : 0;
+    const overallNoPct  = grandTotal ? Math.round((totalNo  / grandTotal) * 100) : 0;
+  %>
+
+  <!-- Overall summary card -->
+  <div class="card mb-4 shadow-sm">
+    <div class="card-body">
+      <h5 class="card-title">All Votes</h5>
+      <div class="row text-center mb-3">
+        <div class="col-6">
+          <div class="display-6 text-success fw-bold"><%= totalYes %></div>
+          <div class="text-muted">Yes (<%= overallYesPct %>%)</div>
+        </div>
+        <div class="col-6">
+          <div class="display-6 text-danger fw-bold"><%= totalNo %></div>
+          <div class="text-muted">No (<%= overallNoPct %>%)</div>
+        </div>
+      </div>
+      <div class="progress" style="height: 24px;">
+        <div class="progress-bar bg-success fs-6" style="width: <%= overallYesPct %>%">
+          <% if (overallYesPct >= 10) { %><%= overallYesPct %>%<% } %>
+        </div>
+        <div class="progress-bar bg-danger fs-6" style="width: <%= overallNoPct %>%">
+          <% if (overallNoPct >= 10) { %><%= overallNoPct %>%<% } %>
+        </div>
+      </div>
+      <div class="text-muted small mt-2"><%= grandTotal %> total vote<%= grandTotal !== 1 ? 's' : '' %></div>
+    </div>
+  </div>
+
+  <!-- Breakdown by state -->
+  <% if (stateData.length > 0) { %>
+    <h5 class="mb-3">Breakdown by State</h5>
+    <div class="table-responsive">
+      <table class="table table-hover align-middle">
+        <thead class="table-dark">
+          <tr>
+            <th>State</th>
+            <th class="text-success">Yes</th>
+            <th class="text-danger">No</th>
+            <th>Total</th>
+            <th style="min-width: 160px;">Split</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% stateData.forEach(row => { %>
+            <% const yesPct = Math.round((row.yes / row.total) * 100); %>
+            <% const noPct  = 100 - yesPct; %>
+            <tr>
+              <td class="fw-semibold"><%= row.state %></td>
+              <td class="text-success"><%= row.yes %></td>
+              <td class="text-danger"><%= row.no %></td>
+              <td class="text-muted"><%= row.total %></td>
+              <td>
+                <div class="progress" style="height: 14px;">
+                  <div class="progress-bar bg-success" style="width: <%= yesPct %>%" title="Yes <%= yesPct %>%"></div>
+                  <div class="progress-bar bg-danger"  style="width: <%= noPct  %>%" title="No <%= noPct %>%"></div>
+                </div>
+                <div class="small text-muted mt-1"><%= yesPct %>% Yes</div>
+              </td>
+            </tr>
+          <% }); %>
+        </tbody>
+      </table>
+    </div>
+  <% } else { %>
+    <div class="text-center text-muted py-5">
+      <p class="fs-5">No votes have been cast yet.</p>
+      <a href="/video/list" class="btn btn-primary">Watch a video and vote</a>
+    </div>
+  <% } %>
+</div>

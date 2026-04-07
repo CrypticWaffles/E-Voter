@@ -9,11 +9,10 @@
     "@sailshq/lodash": "^3.10.6",
     "@sailshq/socket.io-redis": "^6.1.2",
     "axios": "^1.8.2",
-    "sails": "^1.5.14",
+    "sails": "^1.5.17",
     "sails-hook-grunt": "^5.0.0",
     "sails-hook-orm": "^4.0.3",
-    "sails-hook-sockets": "^3.0.0",
-    "sails-postgresql": "^5.0.1"
+    "sails-hook-sockets": "^3.0.0"
   },
   "devDependencies": {
     "eslint": "5.16.0",

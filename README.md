@@ -1,94 +1,80 @@
-# The Middles Repo (e-voter)
-This repository contains the source code for "e-voter", a web application built with the Sails.js framework. The platform allows users to view legislative video content, cast votes on them, and provide feedback. It also includes functionality to look up location data based on a user's ZIP code to potentially tailor content.
+# E-Voter
+
+A civic engagement web platform where users watch legislative video content, cast yes/no votes, and see how their state voted compared to the rest of the country.
 
 ## Features
 
-*   **Video Viewing:** Users can browse a list of videos and play them directly in the browser.
-*   **Voting System:** A simple "Yes/No" voting mechanism is attached to videos.
-*   **Location Lookup:** Fetches and displays city and state information based on a provided ZIP code, saving the data for future use.
-*   **Feedback Submission:** A dedicated page for users to submit written feedback.
+- **Video library** — Browse legislative debates and hearings. Each card shows the current yes/no vote split at a glance.
+- **ZIP-aware voting** — Users enter their ZIP code before voting. The app resolves it to a state via the Zippopotam.us API and stores it for future visits.
+- **Live results** — After submitting a vote, the page instantly replaces the voting form with a yes/no progress bar showing updated totals.
+- **National analytics** — A dedicated results page aggregates all votes by state, showing each state's split in a sortable table with progress bars.
+- **Feedback** — Users can submit open-ended feedback at any time.
+- **Auto-seeding** — The database seeds itself with sample videos on first launch; no manual SQL required.
 
-## Technology Stack
+## Tech Stack
 
-*   **Backend:** Sails.js v1.5, Node.js
-*   **Frontend:** EJS (Embedded JavaScript templates), LESS for styling
-*   **Database:** PostgreSQL
-*   **Real-time Communication:** Socket.io (via Sails)
-*   **Build Tool:** Grunt.js
+| Layer | Technology |
+|---|---|
+| Backend | Node.js, Sails.js v1.5 |
+| Frontend | EJS templates, Bootstrap 5 |
+| Database | sails-disk |
+| HTTP Client | Axios |
+| Build | Grunt.js |
 
 ## Getting Started
 
-Follow these instructions to get a local copy of the project up and running.
-
 ### Prerequisites
 
-*   [Node.js](https://nodejs.org/) (v22.13 or later as specified in `package.json`)
-*   [NPM](https://www.npmjs.com/)
-*   [PostgreSQL](https://www.postgresql.org/)
+- [Node.js](https://nodejs.org/) v22.13+
 
-### Database Setup
+### Installation
 
-1.  Ensure your PostgreSQL server is running.
-2.  Create a new database named `evoter`.
-3.  Create a user named `evoter_user` with the password `your_secure_password`.
-4.  Grant the necessary privileges to the user on the `evoter` database.
-5.  Optionally, you can modify the connection URL in `config/datastores.js` to match your local PostgreSQL configuration.
+```sh
+git clone https://github.com/crypticwaffles/themiddlesrepo.git
+cd themiddlesrepo
+npm install
+node app.js
+```
 
-    ```javascript
-    // config/datastores.js
-    module.exports.datastores = {
-      default: {
-        adapter: 'sails-postgresql',
-        url: 'postgresql://evoter_user:your_secure_password@localhost:5432/evoter'
-      }
-    };
-    ```
-
-### Installation & Running
-
-1.  Clone the repository:
-    ```sh
-    git clone https://github.com/crypticwaffles/themiddlesrepo.git
-    cd themiddlesrepo
-    ```
-
-2.  Install the NPM packages:
-    ```sh
-    npm install
-    ```
-
-3.  Start the Sails.js application:
-    ```sh
-    sails lift
-    ```
-    This will start the server, typically on `http://localhost:1337`. When Sails lifts for the first time, it will automatically run the database migrations (`migrate: 'alter'`) to create the necessary tables (`Video`, `Vote`, `Location`, `Feedback`).
-
-### Seeding Data
-
-To use the video viewing and voting features, you will need to manually add records to the `video` table in your `evoter` database. The table has `title` (string) and `url` (string) columns.
+The app starts at `http://localhost:1337/`. On first launch, Sails runs migrations and seeds the database with 3 sample videos automatically.
 
 ## Application Structure
 
-*   **/api**: Contains the backend logic, including models, controllers, and helpers.
-    *   `controllers`: Handle incoming requests (e.g., `VideoController.js`, `VoteController.js`).
-    *   `models`: Define the database schema (e.g., `Video.js`, `Vote.js`).
-*   **/assets**: Contains frontend assets like stylesheets, client-side JavaScript, and images.
-*   **/config**: Application configuration files, including routes, database connections (`datastores.js`), and policies.
-*   **/views**: EJS templates for the user interface.
-    *   `pages`: Individual page views (e.g., `homepage.ejs`, `videoList.ejs`).
-    *   `layouts`: The main layout file (`layout.ejs`) that wraps the page content.
+```
+api/
+  controllers/
+    VideoController.js    # List videos with vote tallies; serve play page
+    VoteController.js     # Submit votes; aggregate results by state
+    LocationController.js # ZIP code lookup + persistence
+    FeedbackController.js # User feedback submission
+  models/
+    Video.js              # title, url
+    Vote.js               # VideoId, zipId, choice (boolean)
+    Location.js           # zip, state, county
+    Feedback.js           # message
+config/
+  routes.js               # URL → controller/view mapping
+  bootstrap.js            # Database seeder (runs on lift)
+  datastores.js           # Database adapter config (sails-disk)
+views/
+  layouts/layout.ejs      # Shared navbar and page shell
+  pages/
+    homepage.ejs
+    videoList.ejs         # Video cards with live vote splits
+    videoPlay.ejs         # Video player, ZIP input, voting, inline results
+    analytics.ejs         # National results — overall totals + state breakdown
+    feedback.ejs
+```
 
 ## API Endpoints
 
-The application exposes the following routes and API endpoints:
-
-| Method | Path                   | Controller/View          | Description                                |
-| :----- | :--------------------- | :----------------------- | :----------------------------------------- |
-| `GET`  | `/gp/`                   | `pages/homepage.ejs`     | Displays the homepage.                     |
-| `GET`  | `/gp/feedback`           | `pages/feedback.ejs`     | Displays the feedback submission page.     |
-| `POST` | `/gp/feedback`           | `FeedbackController.create` | Submits user feedback.                     |
-| `GET`  | `/gp/location`         | `pages/location.ejs`     | Displays the ZIP code lookup page.         |
-| `GET`  | `/gp/api/location`       | `LocationController.find`   | Looks up location data by ZIP code.        |
-| `GET`  | `/gp/video/list`         | `VideoController.list`      | Displays a list of all available videos.   |
-| `GET`  | `/gp/video/play/:id`     | `VideoController.play`      | Displays a specific video for playback/voting. |
-| `POST` | `/gp/vote`               | `VoteController.vote`       | Submits a vote for a video.                |
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/` | Homepage |
+| `GET` | `/video/list` | Video library with vote tallies |
+| `GET` | `/video/play/:id` | Video player and voting UI |
+| `POST` | `/vote` | Submit a vote; returns `{ yesVotes, noVotes }` |
+| `GET` | `/analytics` | National results aggregated by state |
+| `GET` | `/api/location?zip=` | Resolve ZIP → city/state and persist |
+| `GET` | `/feedback` | Feedback page |
+| `POST` | `/feedback` | Submit feedback |

@@ -1,36 +1,112 @@
-<div class="container">
-    <h2>Now Playing: <%= video.title %></h2>
-    <div class="container">
-        <video width="100%" controls>
-            <source src="<%= video.url %>" type="video/mp4">
-            Your browser does not support the video tag.
-        </video>
-    </div>
-    <div class="container">
-        <button onclick="vote(true)" class="btn btn-success">Yes</button>
-        <button onclick="vote(false)" class="btn btn-danger">No</button>
-    </div>
-    <br>
-    <a href="/gp/video/list" class="btn btn-primary">Back</a>
-</div>
-<script>
-    async function vote(choice) {
-// Make a POST request to the server
-  let response = await fetch('/gp/vote', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      VideoID: 1, choice, zipId: 'Zip'
-    })
-  });
+<div class="container py-4">
+  <h2 class="mb-3"><%= video.title %></h2>
 
-  // Handle the response
-  if (response.ok) {
-    console.log('Vote submitted successfully');
-    window.location.href = '/gp/feedback';
-  } else {
-    console.error('Failed to submit vote');
-    alert('Failed to submit vote');
+  <video width="100%" controls class="mb-4 rounded shadow-sm">
+    <source src="<%= video.url %>" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
+  <!-- Vote Section -->
+  <div id="vote-section" class="card p-4 mb-4">
+    <h5 class="card-title mb-3">Cast Your Vote</h5>
+    <div class="mb-3">
+      <label for="zipInput" class="form-label">Your ZIP Code</label>
+      <input type="text" id="zipInput" class="form-control" style="max-width: 200px;"
+             placeholder="e.g. 90210" maxlength="5" pattern="\d{5}">
+      <div class="form-text">Used to show how your state voted.</div>
+    </div>
+    <div class="d-flex gap-2">
+      <button onclick="submitVote(true)" class="btn btn-success btn-lg px-4">Yes</button>
+      <button onclick="submitVote(false)" class="btn btn-danger btn-lg px-4">No</button>
+    </div>
+    <div id="vote-error" class="text-danger mt-2" style="display:none;"></div>
+  </div>
+
+  <!-- Results Section (shown after voting) -->
+  <div id="results-section" class="card p-4 mb-4" style="display:none;">
+    <h5 class="card-title mb-3">Results</h5>
+    <div class="mb-2 d-flex justify-content-between">
+      <span class="text-success fw-bold">Yes</span>
+      <span id="yes-label" class="text-success"></span>
+    </div>
+    <div class="progress mb-3" style="height: 22px;">
+      <div id="yes-bar" class="progress-bar bg-success" role="progressbar" style="width:0%"></div>
+    </div>
+    <div class="mb-2 d-flex justify-content-between">
+      <span class="text-danger fw-bold">No</span>
+      <span id="no-label" class="text-danger"></span>
+    </div>
+    <div class="progress mb-4" style="height: 22px;">
+      <div id="no-bar" class="progress-bar bg-danger" role="progressbar" style="width:0%"></div>
+    </div>
+    <p class="text-muted mb-3">Thanks for voting! See how the rest of the country voted:</p>
+    <a href="/analytics" class="btn btn-outline-primary">View National Results &rarr;</a>
+  </div>
+
+  <a href="/video/list" class="btn btn-secondary">&larr; Back to Videos</a>
+</div>
+
+<script>
+  // Restore saved ZIP from previous session
+  const savedZip = localStorage.getItem('evoter_zip');
+  if (savedZip) {
+    document.getElementById('zipInput').value = savedZip;
   }
-}
+
+  async function submitVote(choice) {
+    const errorEl = document.getElementById('vote-error');
+    errorEl.style.display = 'none';
+
+    const zip = document.getElementById('zipInput').value.trim();
+    if (!zip || !/^\d{5}$/.test(zip)) {
+      errorEl.textContent = 'Please enter a valid 5-digit ZIP code before voting.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    // Validate ZIP and register it with the location service
+    try {
+      const locRes = await fetch(`/api/location?zip=${zip}`);
+      if (!locRes.ok) {
+        errorEl.textContent = 'ZIP code not found. Please try another.';
+        errorEl.style.display = 'block';
+        return;
+      }
+    } catch (e) {
+      errorEl.textContent = 'Could not validate ZIP code. Please try again.';
+      errorEl.style.display = 'block';
+      return;
+    }
+
+    localStorage.setItem('evoter_zip', zip);
+
+    const response = await fetch('/vote', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ VideoID: <%= video.id %>, choice, zipId: zip })
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      showResults(data.yesVotes, data.noVotes);
+    } else {
+      errorEl.textContent = 'Failed to submit vote. Please try again.';
+      errorEl.style.display = 'block';
+    }
+  }
+
+  function showResults(yes, no) {
+    document.getElementById('vote-section').style.display = 'none';
+
+    const total = yes + no;
+    const yesPct = total ? Math.round((yes / total) * 100) : 0;
+    const noPct  = total ? Math.round((no  / total) * 100) : 0;
+
+    document.getElementById('yes-label').textContent = `${yes} vote${yes !== 1 ? 's' : ''} (${yesPct}%)`;
+    document.getElementById('no-label').textContent  = `${no}  vote${no  !== 1 ? 's' : ''} (${noPct}%)`;
+    document.getElementById('yes-bar').style.width   = yesPct + '%';
+    document.getElementById('no-bar').style.width    = noPct  + '%';
+
+    document.getElementById('results-section').style.display = 'block';
+  }
 </script>
