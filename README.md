@@ -23,6 +23,9 @@ A civic engagement web platform where users watch legislative video content, cas
 
 ## Getting Started
 
+### Demo
+Demo available here: [Demo](https://e-voter-5tp3.onrender.com)
+
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) v22.13+
