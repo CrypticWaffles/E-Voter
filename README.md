@@ -47,8 +47,8 @@ Demo available here: [Demo](https://e-voter-5tp3.onrender.com)
 ### Installation
 
 ```sh
-git clone https://github.com/crypticwaffles/themiddlesrepo.git
-cd themiddlesrepo
+git clone https://github.com/crypticwaffles/E-Voter.git
+cd E-Voter
 npm install
 node app.js
 ```
